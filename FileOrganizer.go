@@ -87,7 +87,7 @@ func (fo *FileOrganizer) organize() {
 
 	imageExt := []string{"jpg", "jpeg", "png"}
 	musicExt := []string{"mp3", "aac", "ogg", "wav"}
-	videoExt := []string{"mp4", "webm", "mov", "mkv", ".mpv2", "avi"}
+	videoExt := []string{"mp4", "webm", "mov", "mkv", "mpv2", "avi"}
 	programExt := []string{"exe", "msi", "msp", "dll"}
 	compressedExt := []string{"rar", "zip", "7z", "tar.gz"}
 	folders := []string{"compressed files", "programs", "videos", "music", "others", "images"}
@@ -112,6 +112,8 @@ func (fo *FileOrganizer) organize() {
 			os.Rename(file, filepath.Join("Compressed Files", file))
 		} else if stringInSlice(ext, programExt) {
 			os.Rename(file, filepath.Join("Programs", file))
+		} else if ext == "pdf" {
+			os.Rename(file, filepath.Join("PDFs", file))
 		} else {
 			os.Rename(file, filepath.Join("Others", file))
 		}
