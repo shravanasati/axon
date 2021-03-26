@@ -198,5 +198,5 @@ func main()  {
 	} else {
 		fmt.Println("Invalid input!")
 	}
-	
+	fmt.Scanln()
 }
