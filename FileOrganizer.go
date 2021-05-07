@@ -198,5 +198,7 @@ func main()  {
 	} else {
 		fmt.Println("Invalid input!")
 	}
+
+  fmt.Println("Press any key to continue.")
 	fmt.Scanln()
 }
