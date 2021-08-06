@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"strings"
-	"path/filepath"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 func stringInSlice(s string, slice []string) bool {
@@ -23,10 +23,9 @@ func validPath(path string) bool {
 	return false
 }
 
-
 // FileOrganizer is the base struct for all the functions to organize files.
 type FileOrganizer struct {
-	path string
+	path    string
 	actions []string
 }
 
@@ -52,28 +51,28 @@ func (fo *FileOrganizer) prettify(casing string) {
 func (fo *FileOrganizer) createDirs() {
 	os.Chdir(fo.path)
 
-	if validPath("Images") == false {
+	if !validPath("./Images") {
 		os.Mkdir("Images", os.ModePerm)
 		fo.actions = append(fo.actions, "Created Images directory in "+fo.path)
 	}
-	if validPath("Music") == false {
+	if !validPath("./Music") {
 		os.Mkdir("Music", os.ModePerm)
 		fo.actions = append(fo.actions, "Created Music directory in "+fo.path)
 	}
-	if validPath("Videos") == false {
+	if !validPath("./Videos") {
 		os.Mkdir("Videos", os.ModePerm)
 		fo.actions = append(fo.actions, "Created Videos directory in "+fo.path)
 	}
-	if validPath("Programs") == false {
+	if !validPath("./Programs") {
 		os.Mkdir("Programs", os.ModePerm)
 		fo.actions = append(fo.actions, "Created Programs directory in "+fo.path)
 	}
-	if validPath("Compressed Files") == false {
+	if !validPath("./Compressed Files") {
 		os.Mkdir("Compressed Files", os.ModePerm)
 		fo.actions = append(fo.actions, "Created Compressed Files directory in "+fo.path)
 	}
-	if validPath(filepath.Join(fo.path, "Others")) == false {
-		os.Mkdir("Others", os.ModePerm)
+	if !validPath(filepath.Join(fo.path, "Others")) {
+		os.Mkdir("./Others", os.ModePerm)
 		fo.actions = append(fo.actions, "Created Others directory in "+fo.path)
 	}
 }
@@ -85,10 +84,10 @@ func (fo *FileOrganizer) organize() {
 		panic(err)
 	}
 
-	imageExt := []string{"jpg", "jpeg", "png"}
+	imageExt := []string{"jpg", "jpeg", "png", "jfif"}
 	musicExt := []string{"mp3", "aac", "ogg", "wav"}
-	videoExt := []string{"mp4", "webm", "mov", "mkv", "mpv2", "avi"}
-	programExt := []string{"exe", "msi", "msp", "dll"}
+	videoExt := []string{"mp4", "webm", "mov", "mkv", "mpv2", "avi", "gif"}
+	programExt := []string{"exe", "msi", "msp", "dll", "out"}
 	compressedExt := []string{"rar", "zip", "7z", "tar.gz"}
 	folders := []string{"compressed files", "programs", "videos", "music", "others", "images"}
 
@@ -100,6 +99,9 @@ func (fo *FileOrganizer) organize() {
 		}
 
 		split := strings.Split(file, ".")
+		if len(split) == 1 {
+			continue
+		}
 		ext := strings.ToLower(split[len(split)-1])
 
 		if stringInSlice(ext, imageExt) {
@@ -112,8 +114,6 @@ func (fo *FileOrganizer) organize() {
 			os.Rename(file, filepath.Join("Compressed Files", file))
 		} else if stringInSlice(ext, programExt) {
 			os.Rename(file, filepath.Join("Programs", file))
-		} else if ext == "pdf" {
-			os.Rename(file, filepath.Join("PDFs", file))
 		} else {
 			os.Rename(file, filepath.Join("Others", file))
 		}
@@ -122,13 +122,15 @@ func (fo *FileOrganizer) organize() {
 	fo.actions = append(fo.actions, "Organized the files in "+fo.path)
 }
 
-func (fo *FileOrganizer) showActions() {
+func (fo *FileOrganizer) showActions() string {
 	fmt.Println("-----------------------------------------")
-	data := "\nAction report " + "(" + fmt.Sprint(len(fo.actions)) + " actions performed):\n"
+	data := fmt.Sprintf("\nAction report for `%s` (%d actions performed): \n", fo.path, len(fo.actions))
+
 	for _, action := range fo.actions {
 		data += action + "\n"
 	}
-	fmt.Println(data)
+
+	return data
 }
 
 func (fo *FileOrganizer) renameDir(newName string) {
@@ -145,60 +147,4 @@ func (fo *FileOrganizer) renameDir(newName string) {
 		os.Rename(file, fmt.Sprintf("%v %v.%v", newName, i+1, ext))
 	}
 	fo.actions = append(fo.actions, "Renamed all files in "+fo.path)
-}
-
-func main()  {
-	fmt.Println("Welcome to the GO FILE ORGANIZER!")
-	
-	var dir string
-	fmt.Print("Enter the directory: ")
-	fmt.Scanln(&dir)
-	fo := FileOrganizer{path:dir, actions:[]string{}}
-
-
-	if !(validPath(fo.path)) {
-		panic("Invalid path to the directory!")
-	}
-
-	var task int
-	fmt.Println("What do you want to do?\n 1. Prettify files \n 2. Organize files \n 3. Rename all files \n 4. Master plan (prettify + organize)")
-	fmt.Scanln(&task)
-
-	if task == 1 {
-		for {
-			var casing string
-			fmt.Print("Enter the conversion case (lower/upper/title): ")
-			fmt.Scanln(&casing)
-
-			if stringInSlice(strings.ToLower(casing), []string{"lower", "upper", "title"}) {
-				fo.prettify(casing)
-				fo.showActions()
-				break
-			} else {
-				fmt.Println("Invalid casing! It must be one from", []string{"lower", "upper", "title"})
-			}
-		}
-	
-	} else if task == 2 {
-		fo.organize()
-		fo.showActions()
-	
-	} else if task == 3 {
-		var name string
-		fmt.Print("Enter the new name for all the files in the directory: ")
-		fmt.Scanln(&name)
-		fo.renameDir(name)
-		fo.showActions()
-	
-	} else if task == 4 {
-		fo.prettify("title")
-		fo.organize()
-		fo.showActions()
-	
-	} else {
-		fmt.Println("Invalid input!")
-	}
-
-  fmt.Println("Press any key to continue.")
-	fmt.Scanln()
 }
