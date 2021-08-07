@@ -1,29 +1,91 @@
-# File-Organizer
+# axon
 
 ## Overview
-**File Organizer** is a command line utility to organize and prettify cluttered folders, written in Go.
+*axon* is a cross platform, command line utility for organizing and prettifying cluttered folders, written in Go.
 
 
 ## Features
+- Cross platform
 - Prettify files in a folder
 - Organize files in a folder
 - Rename files in a folder
-- Watch the actions performed by the program at the end
-- Master plan which prettifies as well as organizes files
+- Concurrent cleaning
+- Fast and reliable
 
 
 ## Installation
-### Using Git
-Type the following command in your Git Bash:
 
-- For SSH:
-```git clone git@github.com:Shravan-1908/File-Organizer.git```
-- For HTTPS: ```git clone https://github.com/Shravan-1908/File-Organizer.git```
+**For Linux users:**
 
-The whole repository would be cloned in the directory you opened the Git Bash in.
+Execute the following command in bash:
 
-### Using GitHub ZIP download
-You can alternatively download the repository as a zip file using the GitHub **Download ZIP** feature. 
+```bash
+curl https://raw.githubusercontent.com/Shravan-1908/axon/master/scripts/linux_install.sh > axon_install.sh
+
+chmod +x ./axon_install.sh
+
+bash ./axon_install.sh
+```
 
 
-You can either use the *exe* build of the File Organizer or if you have Go compiler installed on your system, you can run the program using the command ```go run .\FileOrganizer.go```.
+**For MacOS users:**
+
+Execute the following command in bash:
+
+```bash
+curl https://raw.githubusercontent.com/Shravan-1908/axon/master/scripts/macos_install.sh > axon_install.sh
+
+chmod +x ./axon_install.sh
+
+bash ./axon_install.sh
+```
+
+**For Windows users:**
+
+Open Powershell **as Admin** and execute the following command:
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; (Invoke-WebRequest -Uri https://raw.githubusercontent.com/Shravan-1908/axon/master/scripts/windows_install.ps1 -UseBasicParsing).Content | powershell -
+```
+
+To verify the installation of *axon*, restart the shell and execute `axon -v`. You should see output like this:
+
+```
+axon 1.0.0
+
+Version: 1.0.0
+```
+
+If the output isn't something like this, you need to repeat the above steps carefully.
+
+
+<br>
+
+
+## Usage
+
+```
+axon 1.1.0
+
+axon is a command line utility to organize and prettify your file system quickly and reliably.
+
+Usage:
+   axon [dirs] {flags}
+   axon <command> {flags}
+
+Commands: 
+   help                          displays usage information
+   up                            Update axon.
+   version                       displays version number
+
+Arguments: 
+   dirs                          The directory to be organized. (default: ./) {variadic}
+
+Flags: 
+   -h, --help                    displays usage information of the application or a command (default: false)
+   -o, --organise                Organize the directory. (default: false)
+   -p, --prettify                Prettify all files with a desired casing. (default: none)
+   -r, --rename                  Rename the files numerically with a certain alias. (default: none)
+   -v, --version                 displays version number (default: false)
+```
+
+axon can accept multiple directories as arguments and will concurrently work on them with the provided options.
