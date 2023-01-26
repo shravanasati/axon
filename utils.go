@@ -7,9 +7,9 @@ import (
 	"strings"
 )
 
-func stringInSlice(s string, slice []string) bool {
-	for _, str := range slice {
-		if str == s {
+func itemInSlice[T comparable](s T, slice []T) bool {
+	for _, item := range slice {
+		if item == s {
 			return true
 		}
 	}
@@ -75,6 +75,10 @@ func (fo *FileOrganizer) createDirs() {
 		os.Mkdir("./Others", os.ModePerm)
 		fo.actions = append(fo.actions, "Created Others directory in "+fo.path)
 	}
+	if !validPath(filepath.Join(fo.path, "PDFs")) {
+		os.Mkdir("./PDFs", os.ModePerm)
+		fo.actions = append(fo.actions, "Created PDFs directory in "+fo.path)
+	}
 }
 
 func (fo *FileOrganizer) organize() {
@@ -88,13 +92,14 @@ func (fo *FileOrganizer) organize() {
 	musicExt := []string{"mp3", "aac", "ogg", "wav"}
 	videoExt := []string{"mp4", "webm", "mov", "mkv", "mpv2", "avi", "gif"}
 	programExt := []string{"exe", "msi", "msp", "dll", "out"}
-	compressedExt := []string{"rar", "zip", "7z", "tar.gz"}
+	compressedExt := []string{"rar", "zip", "7z", "tar"}
+	pdfExt := []string{"pdf"}
 	folders := []string{"compressed files", "programs", "videos", "music", "others", "images"}
 
 	fo.createDirs()
 
 	for _, file := range files {
-		if stringInSlice(strings.ToLower(file), folders) {
+		if itemInSlice(strings.ToLower(file), folders) {
 			continue
 		}
 
@@ -104,16 +109,18 @@ func (fo *FileOrganizer) organize() {
 		}
 		ext := strings.ToLower(split[len(split)-1])
 
-		if stringInSlice(ext, imageExt) {
+		if itemInSlice(ext, imageExt) {
 			os.Rename(file, filepath.Join("Images", file))
-		} else if stringInSlice(ext, musicExt) {
+		} else if itemInSlice(ext, musicExt) {
 			os.Rename(file, filepath.Join("Music", file))
-		} else if stringInSlice(ext, videoExt) {
+		} else if itemInSlice(ext, videoExt) {
 			os.Rename(file, filepath.Join("Videos", file))
-		} else if stringInSlice(ext, compressedExt) {
+		} else if itemInSlice(ext, compressedExt) {
 			os.Rename(file, filepath.Join("Compressed Files", file))
-		} else if stringInSlice(ext, programExt) {
+		} else if itemInSlice(ext, programExt) {
 			os.Rename(file, filepath.Join("Programs", file))
+		} else if itemInSlice(ext, pdfExt) {
+			os.Rename(file, filepath.Join("PDFs", file))
 		} else {
 			os.Rename(file, filepath.Join("Others", file))
 		}
