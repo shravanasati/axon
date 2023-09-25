@@ -32,6 +32,7 @@ func main() {
 		AddFlag("prettify,p", "Prettify all files with a desired casing.", commando.String, "none").
 		AddFlag("organise,o", "Organise the directory.", commando.Bool, true).
 		AddFlag("rename,r", "Rename the files numerically with a certain alias.", commando.String, "none").
+		AddFlag("regex,x", "Filter files using regular expressions.", commando.String, "none").
 		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 
 			// getting all arg and flag values
@@ -51,6 +52,10 @@ func main() {
 				rename = "none"
 			}
 
+			regex, e := flags["regex"].GetString()
+			if e != nil {
+				regex = ""
+			}
 			// making a buffered channel
 			ch := make(chan string, len(dirs))
 
@@ -60,6 +65,7 @@ func main() {
 					if validPath(dir) {
 						fo := FileOrganizer{
 							path: dir,
+							regexPattern: regex,
 						}
 
 						if organise {

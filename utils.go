@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -16,6 +17,16 @@ func itemInSlice[T comparable](s T, slice []T) bool {
 	return false
 }
 
+func filter[T any](function func(arg T) bool, slice []T) []T {
+	newSlice := make([]T, len(slice))
+	for _, v := range slice {
+		if function(v) {
+			newSlice = append(newSlice, v)
+		}
+	}
+	return newSlice
+}
+
 func validPath(path string) bool {
 	if _, err := os.Stat(path); err == nil {
 		return true
@@ -25,8 +36,9 @@ func validPath(path string) bool {
 
 // FileOrganizer is the base struct for all the functions to organize files.
 type FileOrganizer struct {
-	path    string
-	actions []string
+	path         string
+	actions      []string
+	regexPattern string
 }
 
 func (fo *FileOrganizer) prettify(casing string) {
@@ -35,8 +47,13 @@ func (fo *FileOrganizer) prettify(casing string) {
 	if err != nil {
 		panic(err)
 	}
+	regex, err := regexp.Compile(fo.regexPattern)
+	if err != nil {
+		fmt.Printf("unable to parse the given regex: %v. please check it again.\n", err)
+		return
+	}
 
-	for _, file := range files {
+	for _, file := range filter(func(arg string) bool {return regex.MatchString(arg)}, files) {
 		if casing == "lower" {
 			os.Rename(file, strings.ToLower(file))
 		} else if casing == "upper" {
@@ -98,7 +115,14 @@ func (fo *FileOrganizer) organize() {
 
 	fo.createDirs()
 
-	for _, file := range files {
+	regex, err := regexp.Compile(fo.regexPattern)
+	if err != nil {
+		fmt.Printf("unable to parse the given regex: %v. please check it again.\n", err)
+		return
+	}
+
+
+	for _, file := range filter(func(arg string) bool {return regex.MatchString(arg)}, files) {
 		if itemInSlice(strings.ToLower(file), folders) {
 			continue
 		}
@@ -147,7 +171,14 @@ func (fo *FileOrganizer) renameDir(newName string) {
 		panic(err)
 	}
 
-	for i, file := range files {
+	regex, err := regexp.Compile(fo.regexPattern)
+	if err != nil {
+		fmt.Printf("unable to parse the given regex: %v. please check it again.\n", err)
+		return
+	}
+
+
+	for i, file := range filter(func(arg string) bool {return regex.MatchString(arg)}, files) {
 		split := strings.Split(file, ".")
 		ext := strings.ToLower(split[len(split)-1])
 
