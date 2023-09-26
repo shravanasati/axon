@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -18,7 +20,7 @@ func itemInSlice[T comparable](s T, slice []T) bool {
 }
 
 func filter[T any](function func(arg T) bool, slice []T) []T {
-	newSlice := make([]T, len(slice))
+	var newSlice []T
 	for _, v := range slice {
 		if function(v) {
 			newSlice = append(newSlice, v)
@@ -36,9 +38,9 @@ func validPath(path string) bool {
 
 // FileOrganizer is the base struct for all the functions to organize files.
 type FileOrganizer struct {
-	path         string
-	actions      []string
-	regexPattern string
+	path    string
+	actions []string
+	regex   *regexp.Regexp
 }
 
 func (fo *FileOrganizer) prettify(casing string) {
@@ -47,13 +49,8 @@ func (fo *FileOrganizer) prettify(casing string) {
 	if err != nil {
 		panic(err)
 	}
-	regex, err := regexp.Compile(fo.regexPattern)
-	if err != nil {
-		fmt.Printf("unable to parse the given regex: %v. please check it again.\n", err)
-		return
-	}
 
-	for _, file := range filter(func(arg string) bool {return regex.MatchString(arg)}, files) {
+	for _, file := range filter(func(arg string) bool { return fo.regex.MatchString(arg) }, files) {
 		if casing == "lower" {
 			os.Rename(file, strings.ToLower(file))
 		} else if casing == "upper" {
@@ -115,14 +112,7 @@ func (fo *FileOrganizer) organize() {
 
 	fo.createDirs()
 
-	regex, err := regexp.Compile(fo.regexPattern)
-	if err != nil {
-		fmt.Printf("unable to parse the given regex: %v. please check it again.\n", err)
-		return
-	}
-
-
-	for _, file := range filter(func(arg string) bool {return regex.MatchString(arg)}, files) {
+	for _, file := range filter(func(arg string) bool { return fo.regex.MatchString(arg) }, files) {
 		if itemInSlice(strings.ToLower(file), folders) {
 			continue
 		}
@@ -171,18 +161,28 @@ func (fo *FileOrganizer) renameDir(newName string) {
 		panic(err)
 	}
 
-	regex, err := regexp.Compile(fo.regexPattern)
-	if err != nil {
-		fmt.Printf("unable to parse the given regex: %v. please check it again.\n", err)
-		return
-	}
-
-
-	for i, file := range filter(func(arg string) bool {return regex.MatchString(arg)}, files) {
+	for i, file := range filter(func(arg string) bool { return fo.regex.MatchString(arg) }, files) {
 		split := strings.Split(file, ".")
 		ext := strings.ToLower(split[len(split)-1])
 
 		os.Rename(file, fmt.Sprintf("%v %v.%v", newName, i+1, ext))
 	}
 	fo.actions = append(fo.actions, "Renamed all files in "+fo.path)
+}
+
+func (fo *FileOrganizer) move(targetDir string) {
+	files, err := ioutil.ReadDir(fo.path)
+	if err != nil {
+		panic(err)
+	}
+	if !validPath(targetDir) {
+		fmt.Printf("the target directory %s doesnt exist", targetDir)
+		return
+	}
+
+	for _, file := range filter(func(arg fs.FileInfo) bool { return fo.regex.MatchString(arg.Name()) && !arg.IsDir() }, files) {
+		newpath := filepath.Join(targetDir, file.Name())
+		oldpath := filepath.Join(fo.path, file.Name())
+		os.Rename(oldpath, newpath)
+	}
 }

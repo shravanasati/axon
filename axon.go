@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/thatisuday/commando"
 )
 
 const (
-	NAME = "axon"
+	NAME    = "axon"
 	VERSION = "1.1.0"
 )
 
@@ -22,7 +23,6 @@ func main() {
 		SetVersion(VERSION).
 		SetDescription("axon is a command line utility to organise and pretty your file system quickly and reliably.")
 
-
 	// root command
 	commando.
 		Register(nil).
@@ -33,6 +33,7 @@ func main() {
 		AddFlag("organise,o", "Organise the directory.", commando.Bool, true).
 		AddFlag("rename,r", "Rename the files numerically with a certain alias.", commando.String, "none").
 		AddFlag("regex,x", "Filter files using regular expressions.", commando.String, "none").
+		AddFlag("move,m", "Move selected files to a directiry.", commando.String, ":none:").
 		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 
 			// getting all arg and flag values
@@ -52,20 +53,35 @@ func main() {
 				rename = "none"
 			}
 
-			regex, e := flags["regex"].GetString()
+			moveToDir, e := flags["move"].GetString()
 			if e != nil {
-				regex = ""
+				moveToDir = ":none:"
+			}
+
+			regexPattern, e := flags["regex"].GetString()
+			if e != nil {
+				regexPattern = ""
+			}
+			regex, err := regexp.Compile(regexPattern)
+			if err != nil {
+				fmt.Printf("unable to parse the given regex. please check it again.\n%v", err)
+				return
 			}
 			// making a buffered channel
 			ch := make(chan string, len(dirs))
-
+			// todo better actions report
+			// todo move before organising
 			// organising the files
 			for _, dir := range dirs {
 				go func(dir string) {
 					if validPath(dir) {
 						fo := FileOrganizer{
-							path: dir,
-							regexPattern: regex,
+							path:  dir,
+							regex: regex,
+						}
+
+						if moveToDir != ":none:" {
+							fo.move(moveToDir)
 						}
 
 						if organise {
@@ -95,7 +111,6 @@ func main() {
 			}
 
 		})
-
 
 	// up command
 	commando.

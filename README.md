@@ -63,6 +63,8 @@ If the output isn't something like this, you need to repeat the above steps care
 
 ## Usage
 
+<!-- todo document regex and move features -->
+
 ```
 axon 1.1.0
 
