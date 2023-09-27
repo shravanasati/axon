@@ -10,7 +10,7 @@ import (
 
 const (
 	NAME    = "axon"
-	VERSION = "1.1.0"
+	VERSION = "1.2.0"
 )
 
 func main() {
@@ -32,7 +32,7 @@ func main() {
 		AddFlag("prettify,p", "Prettify all files with a desired casing.", commando.String, "none").
 		AddFlag("organise,o", "Organise the directory.", commando.Bool, true).
 		AddFlag("rename,r", "Rename the files numerically with a certain alias.", commando.String, "none").
-		AddFlag("regex,x", "Filter files using regular expressions.", commando.String, "none").
+		AddFlag("regex,x", "Filter files using regular expressions.", commando.String, ":_none_:").
 		AddFlag("move,m", "Move selected files to a directiry.", commando.String, ":none:").
 		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 
@@ -55,7 +55,7 @@ func main() {
 
 			moveToDir, e := flags["move"].GetString()
 			if e != nil {
-				moveToDir = ":none:"
+				moveToDir = ":_none_:"
 			}
 
 			regexPattern, e := flags["regex"].GetString()
@@ -80,26 +80,27 @@ func main() {
 							regex: regex,
 						}
 
-						if moveToDir != ":none:" {
+						if prettify != "none" {
+							fo.prettify(prettify)
+						}
+
+						if moveToDir != ":_none_:" {
 							fo.move(moveToDir)
+						}
+
+						// todo better renaming
+						if rename != "none" {
+							fo.renameDir(rename)
 						}
 
 						if organise {
 							fo.organize()
 						}
 
-						if prettify != "none" {
-							fo.prettify(prettify)
-						}
-
-						if rename != "none" {
-							fo.renameDir(rename)
-						}
-
 						ch <- fo.showActions()
 
 					} else {
-						ch <- fmt.Sprintf("Skipping %s since it's not a valid directory.", dir)
+						ch <- fmt.Sprintf("Skipping `%s` since it's not a valid directory.", dir)
 					}
 
 				}(dir)

@@ -4,9 +4,12 @@
 *axon* is a cross platform, command line utility for organizing and prettifying cluttered folders, written in Go.
 
 
+
 ## Features
 - Cross platform
+- Regex Selection
 - Prettify files in a folder
+- Move files to a folder
 - Organize files in a folder
 - Rename files in a folder
 - Concurrent cleaning
@@ -68,14 +71,14 @@ If the output isn't something like this, you need to repeat the above steps care
 ```
 axon 1.1.0
 
-axon is a command line utility to organize and prettify your file system quickly and reliably.
+axon is a command line utility to organise and pretty your file system quickly and reliably.
 
 Usage:
    axon [dirs] {flags}
    axon <command> {flags}
 
 Commands: 
-   help                          displays usage information
+   help                          displays usage informationn
    up                            Update axon.
    version                       displays version number
 
@@ -84,10 +87,13 @@ Arguments:
 
 Flags: 
    -h, --help                    displays usage information of the application or a command (default: false)
-   -o, --organise                Organize the directory. (default: false)
+   -m, --move                    Move selected files to a directiry. (default: :none:)
+   -o, --organise                Organise the directory. (default: false)
    -p, --prettify                Prettify all files with a desired casing. (default: none)
+   -x, --regex                   Filter files using regular expressions. (default: none)
    -r, --rename                  Rename the files numerically with a certain alias. (default: none)
    -v, --version                 displays version number (default: false)
+
 ```
 
 axon can accept multiple directories as arguments and will concurrently work on them with the provided options.

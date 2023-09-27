@@ -176,7 +176,7 @@ func (fo *FileOrganizer) move(targetDir string) {
 		panic(err)
 	}
 	if !validPath(targetDir) {
-		fmt.Printf("the target directory %s doesnt exist", targetDir)
+		fmt.Printf("the target directory `%s` doesnt exist\n", targetDir)
 		return
 	}
 
