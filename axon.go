@@ -38,7 +38,7 @@ func main() {
 
 			// getting all arg and flag values
 			dirs := strings.Split(args["dirs"].Value, ",")
-
+// todo option for verbose output
 			prettify, e := flags["prettify"].GetString()
 			if e != nil {
 				prettify = "none"

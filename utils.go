@@ -43,6 +43,14 @@ type FileOrganizer struct {
 	regex   *regexp.Regexp
 }
 
+func NewFileOrganizer(path string, regex *regexp.Regexp) *FileOrganizer {
+	return &FileOrganizer{
+		path: path,
+		regex: regex,
+	}
+}
+
+
 func (fo *FileOrganizer) prettify(casing string) {
 	os.Chdir(fo.path)
 	files, err := filepath.Glob("*")
