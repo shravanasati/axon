@@ -12,7 +12,6 @@
 - Move files to a folder
 - Organize files in a folder
 - Rename files in a folder
-- Concurrent cleaning
 - Fast and reliable
 
 

@@ -45,11 +45,10 @@ type FileOrganizer struct {
 
 func NewFileOrganizer(path string, regex *regexp.Regexp) *FileOrganizer {
 	return &FileOrganizer{
-		path: path,
+		path:  path,
 		regex: regex,
 	}
 }
-
 
 func (fo *FileOrganizer) prettify(casing string) {
 	os.Chdir(fo.path)
@@ -72,34 +71,13 @@ func (fo *FileOrganizer) prettify(casing string) {
 
 func (fo *FileOrganizer) createDirs() {
 	os.Chdir(fo.path)
-
-	if !validPath("./Images") {
-		os.Mkdir("Images", os.ModePerm)
-		fo.actions = append(fo.actions, "Created Images directory in "+fo.path)
-	}
-	if !validPath("./Music") {
-		os.Mkdir("Music", os.ModePerm)
-		fo.actions = append(fo.actions, "Created Music directory in "+fo.path)
-	}
-	if !validPath("./Videos") {
-		os.Mkdir("Videos", os.ModePerm)
-		fo.actions = append(fo.actions, "Created Videos directory in "+fo.path)
-	}
-	if !validPath("./Programs") {
-		os.Mkdir("Programs", os.ModePerm)
-		fo.actions = append(fo.actions, "Created Programs directory in "+fo.path)
-	}
-	if !validPath("./Compressed Files") {
-		os.Mkdir("Compressed Files", os.ModePerm)
-		fo.actions = append(fo.actions, "Created Compressed Files directory in "+fo.path)
-	}
-	if !validPath(filepath.Join(fo.path, "Others")) {
-		os.Mkdir("./Others", os.ModePerm)
-		fo.actions = append(fo.actions, "Created Others directory in "+fo.path)
-	}
-	if !validPath(filepath.Join(fo.path, "PDFs")) {
-		os.Mkdir("./PDFs", os.ModePerm)
-		fo.actions = append(fo.actions, "Created PDFs directory in "+fo.path)
+	dirs := [...]string{"Images", "Music", "Videos", "Programs", "Compressed Files", "PDFs", "Others"}
+	for _, dir := range dirs {
+		localDir := fmt.Sprintf("./%s", dir)
+		if !validPath(localDir) {
+			os.Mkdir(localDir, os.ModePerm)
+			fo.actions = append(fo.actions, fmt.Sprintf("Created '%s' directory in '%s'.", dir, fo.path))
+		}
 	}
 }
 
