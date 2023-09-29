@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -49,21 +48,31 @@ func NewFileOrganizer(path string, regex *regexp.Regexp) *FileOrganizer {
 		regex: regex,
 	}
 }
+func (fo *FileOrganizer) getFilesInFolder() ([]fs.DirEntry, error) {
+	files, err := os.ReadDir(fo.path)
+	if err != nil {
+		return nil, err
+	}
+	function := func(arg fs.DirEntry) bool { return !arg.IsDir() && fo.regex.MatchString(arg.Name()) }
+	return filter(function, files), nil
+}
 
 func (fo *FileOrganizer) prettify(casing string) {
 	os.Chdir(fo.path)
-	files, err := filepath.Glob("*")
+	files, err := fo.getFilesInFolder()
 	if err != nil {
-		panic(err)
+		fmt.Println("unable to get files in the folder: ", fo.path)
+		return
 	}
 
-	for _, file := range filter(func(arg string) bool { return fo.regex.MatchString(arg) }, files) {
+	for _, file := range files {
+		name := file.Name()
 		if casing == "lower" {
-			os.Rename(file, strings.ToLower(file))
+			os.Rename(name, strings.ToLower(name))
 		} else if casing == "upper" {
-			os.Rename(file, strings.ToUpper(file))
+			os.Rename(name, strings.ToUpper(name))
 		} else {
-			os.Rename(file, strings.Title(file))
+			os.Rename(name, strings.Title(name))
 		}
 	}
 	fo.actions = append(fo.actions, "Prettified the directory to "+casing)
@@ -83,9 +92,10 @@ func (fo *FileOrganizer) createDirs() {
 
 func (fo *FileOrganizer) organize() {
 	os.Chdir(fo.path)
-	files, err := filepath.Glob("*")
+	files, err := fo.getFilesInFolder()
 	if err != nil {
-		panic(err)
+		fmt.Println("unable to get files in the folder: ", fo.path)
+		return
 	}
 
 	imageExt := []string{"jpg", "jpeg", "png", "jfif"}
@@ -98,31 +108,32 @@ func (fo *FileOrganizer) organize() {
 
 	fo.createDirs()
 
-	for _, file := range filter(func(arg string) bool { return fo.regex.MatchString(arg) }, files) {
-		if itemInSlice(strings.ToLower(file), folders) {
+	for _, file := range files {
+		filename := file.Name()
+		if itemInSlice(strings.ToLower(filename), folders) {
 			continue
 		}
 
-		split := strings.Split(file, ".")
+		split := strings.Split(filename, ".")
 		if len(split) == 1 {
 			continue
 		}
 		ext := strings.ToLower(split[len(split)-1])
 
 		if itemInSlice(ext, imageExt) {
-			os.Rename(file, filepath.Join("Images", file))
+			os.Rename(filename, filepath.Join("Images", filename))
 		} else if itemInSlice(ext, musicExt) {
-			os.Rename(file, filepath.Join("Music", file))
+			os.Rename(filename, filepath.Join("Music", filename))
 		} else if itemInSlice(ext, videoExt) {
-			os.Rename(file, filepath.Join("Videos", file))
+			os.Rename(filename, filepath.Join("Videos", filename))
 		} else if itemInSlice(ext, compressedExt) {
-			os.Rename(file, filepath.Join("Compressed Files", file))
+			os.Rename(filename, filepath.Join("Compressed Files", filename))
 		} else if itemInSlice(ext, programExt) {
-			os.Rename(file, filepath.Join("Programs", file))
+			os.Rename(filename, filepath.Join("Programs", filename))
 		} else if itemInSlice(ext, pdfExt) {
-			os.Rename(file, filepath.Join("PDFs", file))
+			os.Rename(filename, filepath.Join("PDFs", filename))
 		} else {
-			os.Rename(file, filepath.Join("Others", file))
+			os.Rename(filename, filepath.Join("Others", filename))
 		}
 
 	}
@@ -142,33 +153,36 @@ func (fo *FileOrganizer) showActions() string {
 
 func (fo *FileOrganizer) renameDir(newName string) {
 	os.Chdir(fo.path)
-	files, err := filepath.Glob("*")
+	files, err := fo.getFilesInFolder()
 	if err != nil {
-		panic(err)
+		fmt.Println("unable to get files in ", fo.path)
+		return
 	}
 
-	for i, file := range filter(func(arg string) bool { return fo.regex.MatchString(arg) }, files) {
-		split := strings.Split(file, ".")
+	for i, file := range files {
+		split := strings.Split(file.Name(), ".")
 		ext := strings.ToLower(split[len(split)-1])
 
-		os.Rename(file, fmt.Sprintf("%v %v.%v", newName, i+1, ext))
+		os.Rename(file.Name(), fmt.Sprintf("%v %v.%v", newName, i+1, ext))
+		// fo.actions = append(fo.actions, fmt.Sprintf("Renamed %s to %s"))
 	}
-	fo.actions = append(fo.actions, "Renamed all files in "+fo.path)
 }
 
 func (fo *FileOrganizer) move(targetDir string) {
-	files, err := ioutil.ReadDir(fo.path)
+	files, err := fo.getFilesInFolder()
 	if err != nil {
-		panic(err)
+		fmt.Println("unable to get files in ", fo.path)
+		return
 	}
 	if !validPath(targetDir) {
 		fmt.Printf("the target directory `%s` doesnt exist\n", targetDir)
 		return
 	}
 
-	for _, file := range filter(func(arg fs.FileInfo) bool { return fo.regex.MatchString(arg.Name()) && !arg.IsDir() }, files) {
+	for _, file := range files {
 		newpath := filepath.Join(targetDir, file.Name())
 		oldpath := filepath.Join(fo.path, file.Name())
 		os.Rename(oldpath, newpath)
+		fo.actions = append(fo.actions, fmt.Sprintf("Moved %s to %s.", oldpath, newpath))
 	}
 }

@@ -33,7 +33,7 @@ func main() {
 		AddFlag("organise,o", "Organise the directory.", commando.Bool, true).
 		AddFlag("rename,r", "Rename the files numerically with a certain alias.", commando.String, "none").
 		AddFlag("regex,x", "Filter files using regular expressions.", commando.String, ":_none_:").
-		AddFlag("move,m", "Move selected files to a directiry.", commando.String, ":none:").
+		AddFlag("move,m", "Move selected files to a directiry.", commando.String, ":_none_:").
 		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 
 			// getting all arg and flag values
