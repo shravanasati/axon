@@ -34,11 +34,15 @@ func main() {
 		AddFlag("rename,r", "Rename the files numerically with a certain alias.", commando.String, "none").
 		AddFlag("regex,x", "Filter files using regular expressions.", commando.String, ":_none_:").
 		AddFlag("move,m", "Move selected files to a directiry.", commando.String, ":_none_:").
+		AddFlag("verbose,V", "Enable verbose output.", commando.Bool, false).
 		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 
 			// getting all arg and flag values
 			dirs := strings.Split(args["dirs"].Value, ",")
-			// todo option for verbose output
+			verboseOutput, err := flags["verbose"].GetBool()
+			if err != nil {
+				verboseOutput = false
+			}
 			prettify, e := flags["prettify"].GetString()
 			if e != nil {
 				prettify = "none"
@@ -70,14 +74,21 @@ func main() {
 			// making a buffered channel
 			ch := make(chan string, len(dirs))
 			// todo better actions report
-			// todo move before organising
 			// organising the files
 			for _, dir := range dirs {
 				go func(dir string) {
 					if validPath(dir) {
-						fo := FileOrganizer{
-							path:  dir,
-							regex: regex,
+						fo := NewFileOrganizer(dir, regex)
+						if verboseOutput {
+							fmt.Println("Selected files:")
+							files, e := fo.getFilesInFolder()
+							if e != nil {
+								ch <- fmt.Sprintf("unable to get files in the folder, error: %v\n", e)
+								return
+							}
+							for i, v := range files {
+								fmt.Printf("%v. %v \n", i+1, v.Name())
+							}
 						}
 
 						if prettify != "none" {

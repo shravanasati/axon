@@ -42,11 +42,12 @@ type FileOrganizer struct {
 	regex   *regexp.Regexp
 }
 
-func NewFileOrganizer(path string, regex *regexp.Regexp) *FileOrganizer {
-	return &FileOrganizer{
+func NewFileOrganizer(path string, regex *regexp.Regexp) (*FileOrganizer) {
+	fo := &FileOrganizer{
 		path:  path,
 		regex: regex,
 	}
+	return fo
 }
 func (fo *FileOrganizer) getFilesInFolder() ([]fs.DirEntry, error) {
 	files, err := os.ReadDir(fo.path)
@@ -183,6 +184,6 @@ func (fo *FileOrganizer) move(targetDir string) {
 		newpath := filepath.Join(targetDir, file.Name())
 		oldpath := filepath.Join(fo.path, file.Name())
 		os.Rename(oldpath, newpath)
-		fo.actions = append(fo.actions, fmt.Sprintf("Moved %s to %s.", oldpath, newpath))
+		fo.actions = append(fo.actions, fmt.Sprintf("Moved `%s` to `%s`.", oldpath, newpath))
 	}
 }
