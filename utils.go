@@ -184,6 +184,6 @@ func (fo *FileOrganizer) move(targetDir string) {
 		newpath := filepath.Join(targetDir, file.Name())
 		oldpath := filepath.Join(fo.path, file.Name())
 		os.Rename(oldpath, newpath)
-		fo.actions = append(fo.actions, fmt.Sprintf("Moved `%s` to `%s`.", oldpath, newpath))
+		fo.actions = append(fo.actions, fmt.Sprintf("Moved `%s` to `%s`.", oldpath, targetDir))
 	}
 }
