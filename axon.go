@@ -33,14 +33,15 @@ func main() {
 		AddFlag("organise,o", "Organise the directory.", commando.Bool, true).
 		AddFlag("rename,r", "Rename the files numerically with a certain alias.", commando.String, "none").
 		AddFlag("regex,x", "Filter files using regular expressions.", commando.String, ":_none_:").
-		AddFlag("move,m", "Move selected files to a directiry.", commando.String, ":_none_:").
+		AddFlag("insensitive,i", "Make the provided regex case-insensitive.", commando.Bool, false).
+		AddFlag("move,m", "Move selected files to a directory.", commando.String, ":_none_:").
 		AddFlag("verbose,V", "Enable verbose output.", commando.Bool, false).
 		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 
 			// getting all arg and flag values
 			dirs := strings.Split(args["dirs"].Value, ",")
-			verboseOutput, err := flags["verbose"].GetBool()
-			if err != nil {
+			verboseOutput, e := flags["verbose"].GetBool()
+			if e != nil {
 				verboseOutput = false
 			}
 			prettify, e := flags["prettify"].GetString()
@@ -65,6 +66,13 @@ func main() {
 			regexPattern, e := flags["regex"].GetString()
 			if e != nil {
 				regexPattern = ""
+			}
+			caseInsensitive, e := flags["insensitive"].GetBool()
+			if e != nil {
+				caseInsensitive = false
+			}
+			if caseInsensitive {
+				regexPattern = "(?i)" + regexPattern
 			}
 			regex, err := regexp.Compile(regexPattern)
 			if err != nil {
