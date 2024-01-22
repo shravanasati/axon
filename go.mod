@@ -1,4 +1,4 @@
-module github.com/Shravan-1908/axon
+module github.com/shravanasati/axon
 
 go 1.18
 

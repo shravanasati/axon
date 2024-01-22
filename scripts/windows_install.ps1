@@ -1,6 +1,6 @@
 Write-Host "Downloading axon..."
 
-$url = "https://github.com/Shravan-1908/axon/releases/latest/download/axon-windows-amd64.exe"
+$url = "https://github.com/shravanasati/axon/releases/latest/download/axon-windows-amd64.exe"
 
 $dir = $env:USERPROFILE + "\.axon"
 $filepath = $env:USERPROFILE + "\.axon\axon.exe"

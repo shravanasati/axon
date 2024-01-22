@@ -22,7 +22,7 @@
 Execute the following command in bash:
 
 ```bash
-curl https://raw.githubusercontent.com/Shravan-1908/axon/master/scripts/linux_install.sh > axon_install.sh
+curl https://raw.githubusercontent.com/shravanasati/axon/master/scripts/linux_install.sh > axon_install.sh
 
 chmod +x ./axon_install.sh
 
@@ -35,7 +35,7 @@ bash ./axon_install.sh
 Execute the following command in bash:
 
 ```bash
-curl https://raw.githubusercontent.com/Shravan-1908/axon/master/scripts/macos_install.sh > axon_install.sh
+curl https://raw.githubusercontent.com/shravanasati/axon/master/scripts/macos_install.sh > axon_install.sh
 
 chmod +x ./axon_install.sh
 
@@ -46,7 +46,7 @@ bash ./axon_install.sh
 
 Open Powershell **as Admin** and execute the following command:
 ```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; (Invoke-WebRequest -Uri https://raw.githubusercontent.com/Shravan-1908/axon/master/scripts/windows_install.ps1 -UseBasicParsing).Content | powershell -
+Set-ExecutionPolicy Bypass -Scope Process -Force; (Invoke-WebRequest -Uri https://raw.githubusercontent.com/shravanasati/axon/master/scripts/windows_install.ps1 -UseBasicParsing).Content | powershell -
 ```
 
 To verify the installation of *axon*, restart the shell and execute `axon -v`. You should see output like this:

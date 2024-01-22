@@ -20,11 +20,11 @@ func update() {
 	url := ""
 	switch runtime.GOOS {
 	case "windows":
-		url = "https://github.com/Shravan-1908/axon/releases/latest/download/axon-windows-amd64.exe"
+		url = "https://github.com/shravanasati/axon/releases/latest/download/axon-windows-amd64.exe"
 	case "linux":
-		url = "https://github.com/Shravan-1908/axon/releases/latest/download/axon-linux-amd64"
+		url = "https://github.com/shravanasati/axon/releases/latest/download/axon-linux-amd64"
 	case "darwin":
-		url = "https://github.com/Shravan-1908/axon/releases/latest/download/axon-darwin-amd64"
+		url = "https://github.com/shravanasati/axon/releases/latest/download/axon-darwin-amd64"
 	default:
 		fmt.Println("Your OS isn't supported by axon.")
 		return

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Downloading axon..."
-curl -L "https://github.com/Shravan-1908/axon/releases/latest/download/axon-linux-amd64" -o axon
+curl -L "https://github.com/shravanasati/axon/releases/latest/download/axon-linux-amd64" -o axon
 
 echo "Adding axon into PATH..."
 
