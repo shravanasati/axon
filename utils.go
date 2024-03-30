@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -42,7 +43,7 @@ type FileOrganizer struct {
 	regex   *regexp.Regexp
 }
 
-func NewFileOrganizer(path string, regex *regexp.Regexp) (*FileOrganizer) {
+func NewFileOrganizer(path string, regex *regexp.Regexp) *FileOrganizer {
 	fo := &FileOrganizer{
 		path:  path,
 		regex: regex,
@@ -63,11 +64,13 @@ func (fo *FileOrganizer) prettify(casing string) {
 	files, err := fo.getFilesInFolder()
 	if err != nil {
 		fmt.Println("unable to get files in the folder: ", fo.path)
+		fmt.Println(err)
 		return
 	}
 
 	for _, file := range files {
 		name := file.Name()
+		// todo broken, needs oldpath-newpath semantics as in move function
 		if casing == "lower" {
 			os.Rename(name, strings.ToLower(name))
 		} else if casing == "upper" {
@@ -185,5 +188,77 @@ func (fo *FileOrganizer) move(targetDir string) {
 		oldpath := filepath.Join(fo.path, file.Name())
 		os.Rename(oldpath, newpath)
 		fo.actions = append(fo.actions, fmt.Sprintf("Moved `%s` to `%s`.", oldpath, targetDir))
+	}
+}
+
+func copyFile(src, dst string) (err error) {
+	sfi, err := os.Stat(src)
+	if err != nil {
+		return
+	}
+	if !sfi.Mode().IsRegular() {
+		// cannot copy non-regular files (e.g., directories,
+		// symlinks, devices, etc.)
+		return fmt.Errorf("CopyFile: non-regular source file %s (%q)", sfi.Name(), sfi.Mode().String())
+	}
+	dfi, err := os.Stat(dst)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return
+		}
+	} else {
+		if !(dfi.Mode().IsRegular()) {
+			return fmt.Errorf("CopyFile: non-regular destination file %s (%q)", dfi.Name(), dfi.Mode().String())
+		}
+		if os.SameFile(sfi, dfi) {
+			return
+		}
+	}
+	err = copyFileContents(src, dst)
+	return
+}
+
+func copyFileContents(src, dst string) (err error) {
+	in, err := os.Open(src)
+	if err != nil {
+		return
+	}
+	defer in.Close()
+	out, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
+	if err != nil {
+		return
+	}
+	defer func() {
+		cerr := out.Close()
+		if err == nil {
+			err = cerr
+		}
+	}()
+	if _, err = io.Copy(out, in); err != nil {
+		return
+	}
+	err = out.Sync()
+	return
+}
+
+func (fo *FileOrganizer) copy(targetDir string) {
+	files, err := fo.getFilesInFolder()
+	if err != nil {
+		fmt.Println("unable to get files in ", fo.path)
+		return
+	}
+	if !validPath(targetDir) {
+		fmt.Printf("the target directory `%s` doesnt exist\n", targetDir)
+		return
+	}
+
+	for _, file := range files {
+		newpath := filepath.Join(targetDir, file.Name())
+		oldpath := filepath.Join(fo.path, file.Name())
+		if err := copyFile(oldpath, newpath); err != nil {
+			fo.actions = append(fo.actions, fmt.Sprintf("Copied `%s` to `%s`.", oldpath, targetDir))
+		} else {
+			fmt.Printf("unable to copy `%v` to `%v`, error: %v\n", file, targetDir, err)
+		}
 	}
 }

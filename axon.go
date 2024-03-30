@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -35,11 +36,21 @@ func main() {
 		AddFlag("regex,x", "Filter files using regular expressions.", commando.String, ":_none_:").
 		AddFlag("insensitive,i", "Make the provided regex case-insensitive.", commando.Bool, false).
 		AddFlag("move,m", "Move selected files to a directory.", commando.String, ":_none_:").
+		AddFlag("copy,c", "Copy selected files to a directory.", commando.String, ":_none_:").
 		AddFlag("verbose,V", "Enable verbose output.", commando.Bool, false).
 		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 
 			// getting all arg and flag values
-			dirs := strings.Split(args["dirs"].Value, ",")
+			dirsGiven := strings.Split(args["dirs"].Value, ",")
+			dirs := []string{}
+			for _, d := range dirsGiven {
+				norm, err := filepath.Abs(d)
+				if err != nil {
+					fmt.Printf("unable to get absolute path of `%s`, error: %v, skipping it \n", d, err)
+					continue
+				}
+				dirs = append(dirs, norm)
+			}
 			verboseOutput, e := flags["verbose"].GetBool()
 			if e != nil {
 				verboseOutput = false
@@ -47,6 +58,11 @@ func main() {
 			prettify, e := flags["prettify"].GetString()
 			if e != nil {
 				prettify = "none"
+			}
+			prettify = strings.ToLower(prettify)
+			if !itemInSlice(prettify, []string{"lower", "upper", "title"}) {
+				fmt.Println("invalid prettify casing: must be one of {lower, upper, title}")
+				return
 			}
 			organise, e := flags["organise"].GetBool()
 			if e != nil {
@@ -59,6 +75,11 @@ func main() {
 			}
 
 			moveToDir, e := flags["move"].GetString()
+			if e != nil {
+				moveToDir = ":_none_:"
+			}
+
+			copyToDir, e := flags["copy"].GetString()
 			if e != nil {
 				moveToDir = ":_none_:"
 			}
@@ -105,6 +126,10 @@ func main() {
 
 						if moveToDir != ":_none_:" {
 							fo.move(moveToDir)
+						}
+
+						if copyToDir != ":_none_:" {
+							fo.copy(copyToDir)
 						}
 
 						// todo better renaming
