@@ -77,11 +77,23 @@ func main() {
 			moveToDir, e := flags["move"].GetString()
 			if e != nil {
 				moveToDir = ":_none_:"
+			} else {
+				moveToDir, e = filepath.Abs(moveToDir)
+				if e != nil {
+					fmt.Printf("unable to get absolute path of `%s`, error: %v, skipping moving operation \n", moveToDir, e)
+					moveToDir = ":_none_:"
+				}
 			}
 
 			copyToDir, e := flags["copy"].GetString()
 			if e != nil {
-				moveToDir = ":_none_:"
+				copyToDir = ":_none_:"
+			} else {
+				copyToDir, e = filepath.Abs(copyToDir)
+				if e != nil {
+					fmt.Printf("unable to get absolute path of `%s`, error: %v, skipping copying operation \n", copyToDir, e)
+					copyToDir = ":_none_:"
+				}
 			}
 
 			regexPattern, e := flags["regex"].GetString()
