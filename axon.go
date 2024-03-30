@@ -58,12 +58,14 @@ func main() {
 			prettify, e := flags["prettify"].GetString()
 			if e != nil {
 				prettify = "none"
+			} else {
+				prettify = strings.ToLower(prettify)
+				if !itemInSlice(prettify, []string{"lower", "upper", "title"}) {
+					fmt.Println("invalid prettify casing: must be one of {lower, upper, title}")
+					return
+				}
 			}
-			prettify = strings.ToLower(prettify)
-			if !itemInSlice(prettify, []string{"lower", "upper", "title"}) {
-				fmt.Println("invalid prettify casing: must be one of {lower, upper, title}")
-				return
-			}
+
 			organise, e := flags["organise"].GetBool()
 			if e != nil {
 				organise = false
